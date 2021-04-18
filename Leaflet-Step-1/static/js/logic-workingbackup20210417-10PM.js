@@ -6,6 +6,7 @@
 var queryUrl = "https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&starttime=2014-01-01&endtime=" +
   "2014-01-02&maxlongitude=-69.52148437&minlongitude=-123.83789062&maxlatitude=48.74894534&minlatitude=25.16517337";
 
+
 // Perform a GET request to the query URL
 d3.json(queryUrl).then(function(data) {
   // Once we get a response, send the data.features object to the createFeatures function
@@ -14,7 +15,6 @@ d3.json(queryUrl).then(function(data) {
 });
 
 function createFeatures(earthquakeData) {
-
   // Define a function we want to run once for each feature in the features array
   // Give each feature a popup describing the place and time of the earthquake
   function onEachFeature(feature, layer) {
@@ -24,57 +24,15 @@ function createFeatures(earthquakeData) {
 
   // Create a GeoJSON layer containing the features array on the earthquakeData object
   // Run the onEachFeature function once for each piece of data in the array
-  var earthquakes = L.geoJSON(earthquakeData, {
-    onEachFeature: onEachFeature
-  }
-  // console.log(earthquakes)
-  );
+  // var earthquakes = L.geoJSON(earthquakeData, {
+  //   onEachFeature: onEachFeature
+  // }
 
-  
-// *******************************************************************************
-// create circle markers
-// NOTE:  
-//   Data markers should reflect the magnitude of the earthquake by their size 
-//   and depth of the earth quake by color. Earthquakes with higher magnitudes 
-//   should appear larger and earthquakes with greater depth should appear darker 
-//   in color.
-// *******************************************************************************
-
-function MagnitudeMarkerSize(mag){
-  return mag * 5
+  console.log(earthquakeData)
+  // Sending earthquakes layer to the createMap function
+    createMap(buildCircles(earthquakeData));
 }
 
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// Function to create 6 color grades for earthquake magnitudes for circle markers.
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-function magnitudeColors(color) {
-  if (color < 1){return "#B7DF5F"}
-  else if (color < 2){return "#DCED11"}
-  else if (color < 3){return "#EDD911"}
-  else if (color < 4){return "#EDB411"} 
-  else if (color < 5 ){return "#ED7211"}
-  else {return "#ED4311"}
-};
-
-// *********************************************
-// create a function that creates markers
-function createCircleMarker(feature, latlng ){
-
-  // Change the values of these options to change the symbol's appearance
-    var markerOptions = {
-      radius: markerSize(feature.properties.mag),
-      fillColor: magnitudeColors(feature.properties.mag),
-      color: "black",
-      weight: 1,
-      opacity: 1,
-      fillOpacity: 0.8
-    }
-    return L.circleMarker( latlng, markerOptions );
-  };
-
-  // Sending our earthquakes layer to the createMap function
-  createMap(earthquakes);
-}
 
 function createMap(earthquakes) {
 
@@ -115,24 +73,28 @@ function createMap(earthquakes) {
     layers: [streetmap, earthquakes]
   });
 
-  // Create a layer control
+  // Create a layer control -- upper right radio buttons for (Street & Dark Map)
   // Pass in our baseMaps and overlayMaps
   // Add the layer control to the map
   L.control.layers(baseMaps, overlayMaps, {
     collapsed: false
   }).addTo(myMap);
 
-
-// --------------
-// // **********************************************************************
+//-----------------------------------------------------------------------------------------
+// ** since legend is not run as a function, put code as part of the Create Map Function
+// // *************************************************************************************
 // // Map LEGEND code section
 // // Reference -- legend code from student activity 17-Day2-Activities4
-// // **********************************************************************
+// // *************************************************************************************
 var legend = L.control({ position: "bottomright" });
 legend.onAdd = function() {
   var div = L.DomUtil.create("div", "info legend");
-  var limits = geojson.options.limits;
-  var colors = geojson.options.colors;
+  // var limits = geojson.options.limits;
+  var limits = [10, 20, 30];
+
+  // var colors = geojson.options.colors;
+  var colors = ["red", "yellow", "green"]
+
   var labels = [];
 
   // Add min & max
@@ -155,7 +117,60 @@ legend.onAdd = function() {
 // Adding legend to the map
 legend.addTo(myMap);
 
-// --------------
+//----------- end of legend code ----------
 
-}
+} // end of function createMap
+
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// Function to create 6 color grades for earthquake magnitudes for circle markers.
+// Color reference:  http://www.2createawebsite.com/build/hex-colors.html
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+function magnitudeColors(color) {
+  if (color < 1){return "#AEF48B"}
+  else if (color < 2){return "E5F48B"}
+  else if (color < 3){return "#F4F48B"}
+  else if (color < 4){return "#F4DA8B"} 
+  else if (color < 5 ){return "#EAB412"}
+  else {return "#EA4C12"}
+};
+
+  // *******************************************************************************
+  // Create circle markers
+  // NOTE:  
+  //   Data markers should reflect the magnitude of the earthquake by their size 
+  //   and depth of the earthquake by color. Earthquakes with higher magnitudes 
+  //   should appear larger and earthquakes with greater depth should appear darker 
+  //   in color.
+  // *******************************************************************************
+  function markerSize(mag){
+    return mag * 50000
+  }
+
+  // // ````````````````````````````````````````````````````````````````````````````````  
+  // // Loop through the locations and create one marker for each location / earthquake
+  // // ````````````````````````````````````````````````````````````````````````````````
+  function buildCircles(earthquakes){
+    circlearray = []
+    console.log("running buildCircles")
+    
+  for (var i = 0; i < earthquakes.length; i++) {
+    circlearray.push(
+
+    L.circle([earthquakes[i].geometry.coordinates[1], earthquakes[i].geometry.coordinates[0]], {
+      fillOpacity: 0.75,
+      // color: "white",
+      stroke:false,
+      fill: true,
+      fillColor: magnitudeColors(earthquakes[i].properties.mag), 
+      radius: markerSize(earthquakes[i].properties.mag),
+    }).bindPopup ("<h3>" + earthquakes[i].properties.place + 
+          "</h3><hr><p>" + new Date(earthquakes[i].properties.time) + "</p>")
+    ) // end of push
+  }
+  console.log(circlearray.length)
+  
+  // .addTo(myMap);
+  return L.layerGroup(circlearray)
+  
+} // end bracket for function createMap
 

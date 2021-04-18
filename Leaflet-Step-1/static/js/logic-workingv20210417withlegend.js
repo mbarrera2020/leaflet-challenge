@@ -6,7 +6,6 @@
 var queryUrl = "https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&starttime=2014-01-01&endtime=" +
   "2014-01-02&maxlongitude=-69.52148437&minlongitude=-123.83789062&maxlatitude=48.74894534&minlatitude=25.16517337";
 
-
 // Perform a GET request to the query URL
 d3.json(queryUrl).then(function(data) {
   // Once we get a response, send the data.features object to the createFeatures function
@@ -24,15 +23,14 @@ function createFeatures(earthquakeData) {
 
   // Create a GeoJSON layer containing the features array on the earthquakeData object
   // Run the onEachFeature function once for each piece of data in the array
-  // var earthquakes = L.geoJSON(earthquakeData, {
-  //   onEachFeature: onEachFeature
-  // }
-
-  console.log(earthquakeData)
-  // Sending earthquakes layer to the createMap function
-    createMap(buildCircles(earthquakeData));
+  var earthquakes = L.geoJSON(earthquakeData, {
+    onEachFeature: onEachFeature
+  }
+);
+console.log(earthquakes)
+// Sending earthquakes layer to the createMap function
+  createMap(earthquakes);
 }
-
 
 function createMap(earthquakes) {
 
@@ -79,48 +77,7 @@ function createMap(earthquakes) {
   L.control.layers(baseMaps, overlayMaps, {
     collapsed: false
   }).addTo(myMap);
-
-//-----------------------------------------------------------------------------------------
-// ** since legend is not run as a function, put code as part of the Create Map Function
-// // *************************************************************************************
-// // Map LEGEND code section
-// // Reference -- legend code from student activity 17-Day2-Activities4
-// // *************************************************************************************
-var legend = L.control({ position: "bottomright" });
-legend.onAdd = function() {
-  var div = L.DomUtil.create("div", "info legend");
-  // var limits = geojson.options.limits;
-  var limits = [10, 20, 30];
-
-  // var colors = geojson.options.colors;
-  var colors = ["red", "yellow", "green"]
-
-  var labels = [];
-
-  // Add min & max
-  var legendInfo = "<h1>Earthquake Magnitude</h1>" +
-    "<div class=\"labels\">" +
-      "<div class=\"min\">" + limits[0] + "</div>" +
-      "<div class=\"max\">" + limits[limits.length - 1] + "</div>" +
-    "</div>";
-
-  div.innerHTML = legendInfo;
-
-  limits.forEach(function(limit, index) {
-    labels.push("<li style=\"background-color: " + colors[index] + "\"></li>");
-  });
-
-  div.innerHTML += "<ul>" + labels.join("") + "</ul>";
-  return div;
-};
-
-// Adding legend to the map
-legend.addTo(myMap);
-
-//----------- end of legend code ----------
-
-} // end of function createMap
-
+  
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // Function to create 6 color grades for earthquake magnitudes for circle markers.
 // Color reference:  http://www.2createawebsite.com/build/hex-colors.html
@@ -138,39 +95,57 @@ function magnitudeColors(color) {
   // Create circle markers
   // NOTE:  
   //   Data markers should reflect the magnitude of the earthquake by their size 
-  //   and depth of the earthquake by color. Earthquakes with higher magnitudes 
+  //   and depth of the earth quake by color. Earthquakes with higher magnitudes 
   //   should appear larger and earthquakes with greater depth should appear darker 
   //   in color.
   // *******************************************************************************
   function markerSize(mag){
-    return mag * 50000
+    return mag * 6
   }
 
   // // ````````````````````````````````````````````````````````````````````````````````  
   // // Loop through the locations and create one marker for each location / earthquake
   // // ````````````````````````````````````````````````````````````````````````````````
-  function buildCircles(earthquakes){
-    circlearray = []
-    console.log("running buildCircles")
-    
   for (var i = 0; i < earthquakes.length; i++) {
-    circlearray.push(
-
-    L.circle([earthquakes[i].geometry.coordinates[1], earthquakes[i].geometry.coordinates[0]], {
+    L.circle(earthquakes[i].geometry.coordinates, {
       fillOpacity: 0.75,
-      // color: "white",
-      stroke:false,
-      fill: true,
-      fillColor: magnitudeColors(earthquakes[i].properties.mag), 
-      radius: markerSize(earthquakes[i].properties.mag),
-    }).bindPopup ("<h3>" + earthquakes[i].properties.place + 
-          "</h3><hr><p>" + new Date(earthquakes[i].properties.time) + "</p>")
-    ) // end of push
+      color: "white",
+      fillColor: magnitudeColors(feature.properties.mag), 
+      radius: markerSize(feature.properties.mag),
+    }).bindPopup
+    .addTo(myMap);
   }
-  console.log(circlearray.length)
-  
-  // .addTo(myMap);
-  return L.layerGroup(circlearray)
-  
+
 } // end bracket for function createMap
+
+// // **********************************************************************
+// // Map LEGEND code section
+// // Reference -- legend code from student activity 17-Day2-Activities4
+// // **********************************************************************
+// var legend = L.control({ position: "bottomright" });
+// legend.onAdd = function() {
+//   var div = L.DomUtil.create("div", "info legend");
+//   var limits = geojson.options.limits;
+//   var colors = geojson.options.colors;
+//   var labels = [];
+
+//   // Add min & max
+//   var legendInfo = "<h1>Earthquake Magnitude</h1>" +
+//     "<div class=\"labels\">" +
+//       "<div class=\"min\">" + limits[0] + "</div>" +
+//       "<div class=\"max\">" + limits[limits.length - 1] + "</div>" +
+//     "</div>";
+
+//   div.innerHTML = legendInfo;
+
+//   limits.forEach(function(limit, index) {
+//     labels.push("<li style=\"background-color: " + colors[index] + "\"></li>");
+//   });
+
+//   div.innerHTML += "<ul>" + labels.join("") + "</ul>";
+//   return div;
+// };
+
+// // Adding legend to the map
+// legend.addTo(myMap);
 
