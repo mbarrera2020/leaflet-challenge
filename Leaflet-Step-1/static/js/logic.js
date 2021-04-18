@@ -2,10 +2,12 @@
 // reference main URL -- https://earthquake.usgs.gov/earthquakes/feed/v1.0/geojson.php
 // var queryURL = "https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&starttime=2019-01-01&endtime=2019-01-02&maxlongitude=170.52148437&minlongitude=-150.83789062&maxlatitude=80.74894534&minlatitude=-85.16517337"
 
+// url for earthquake in last 7 days -- reference only
+// https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/significant_week.geojson
+
 // Store our API endpoint inside queryUrl
 var queryUrl = "https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&starttime=2014-01-01&endtime=" +
   "2014-01-02&maxlongitude=-69.52148437&minlongitude=-123.83789062&maxlatitude=48.74894534&minlatitude=25.16517337";
-
 
 // Perform a GET request to the query URL
 d3.json(queryUrl).then(function(data) {
@@ -33,7 +35,6 @@ function createFeatures(earthquakeData) {
     createMap(buildCircles(earthquakeData));
 }
 
-
 function createMap(earthquakes) {
 
   // Define streetmap and darkmap layers
@@ -42,6 +43,7 @@ function createMap(earthquakes) {
     tileSize: 512,
     maxZoom: 18,
     zoomOffset: -1,
+    // zoom: 7,
     id: "mapbox/streets-v11",
     accessToken: API_KEY
   });
@@ -87,21 +89,28 @@ function createMap(earthquakes) {
 // // Reference -- legend code from student activity 17-Day2-Activities4
 // // *************************************************************************************
 var legend = L.control({ position: "bottomright" });
-legend.onAdd = function() {
+  legend.onAdd = function() {
   var div = L.DomUtil.create("div", "info legend");
+  // -- if using geojson
   // var limits = geojson.options.limits;
-  var limits = [10, 20, 30];
-
   // var colors = geojson.options.colors;
-  var colors = ["red", "yellow", "green"]
+
+  // -- use this for testing
+  var limits = [10, 20, 30, 40, 50, 60];
+  var colors = ["red", "orange", "yellow", "green", "blue", "indigo"];
+  // var colors = ["limegreen", "orange", "yellow", "green", "blue", "indigo"];
+  
+  // var limits = ["-10-10", "10-30", "30-50", "50-70", "70-90", "90+"];
+  // var colors = ["#AEF48B", "E5F48B", "F4F48B", "F4DA8B", "EAB412", "EA4C12"];
 
   var labels = [];
+  // var labels = ["-10-10", "10-30", "30-50", "50-70", "70-90", "90+"];
 
   // Add min & max
-  var legendInfo = "<h1>Earthquake Magnitude</h1>" +
+  var legendInfo = "<h5>Mag (0, 1, 2, 3, 4, 5+)" +
     "<div class=\"labels\">" +
-      "<div class=\"min\">" + limits[0] + "</div>" +
-      "<div class=\"max\">" + limits[limits.length - 1] + "</div>" +
+      // "<div class=\"min\">" + limits[0] + "</div>" +
+      // "<div class=\"max\">" + limits[limits.length - 1] + "</div>" +
     "</div>";
 
   div.innerHTML = legendInfo;
@@ -110,7 +119,8 @@ legend.onAdd = function() {
     labels.push("<li style=\"background-color: " + colors[index] + "\"></li>");
   });
 
-  div.innerHTML += "<ul>" + labels.join("") + "</ul>";
+  // div.innerHTML += "<ul>" + labels.join("") + "</ul>";
+  div.innerHTML += labels.join("");
   return div;
 };
 
@@ -125,14 +135,32 @@ legend.addTo(myMap);
 // Function to create 6 color grades for earthquake magnitudes for circle markers.
 // Color reference:  http://www.2createawebsite.com/build/hex-colors.html
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// function magnitudeColors(color) {
+//   if (color < 1){return "#AEF48B"}
+//   else if (color < 2){return "E5F48B"}
+//   else if (color < 3){return "#F4F48B"}
+//   else if (color < 4){return "#F4DA8B"} 
+//   else if (color < 5 ){return "#EAB412"}
+//   else {return "#EA4C12"}
+// };
+
 function magnitudeColors(color) {
-  if (color < 1){return "#AEF48B"}
-  else if (color < 2){return "E5F48B"}
-  else if (color < 3){return "#F4F48B"}
-  else if (color < 4){return "#F4DA8B"} 
-  else if (color < 5 ){return "#EAB412"}
-  else {return "#EA4C12"}
+  if (color < 1){return "red"}
+  else if (color < 2){return "orange"}
+  else if (color < 3){return "yellow"}
+  else if (color < 4){return "green"} 
+  else if (color < 5 ){return "blue"}
+  else {return "indigo"}
 };
+
+// function magnitudeColors(color) {
+//   if (color < 1){return "green"}
+//   else if (color < 2){return "yellowgreen"}
+//   else if (color < 3){return "yelloworange"}
+//   else if (color < 4){return "orange"} 
+//   else if (color < 5 ){return "redorange"}
+//   else {return "red"}
+// };
 
   // *******************************************************************************
   // Create circle markers
@@ -143,7 +171,7 @@ function magnitudeColors(color) {
   //   in color.
   // *******************************************************************************
   function markerSize(mag){
-    return mag * 50000
+    return mag * 35000
   }
 
   // // ````````````````````````````````````````````````````````````````````````````````  
@@ -151,23 +179,29 @@ function magnitudeColors(color) {
   // // ````````````````````````````````````````````````````````````````````````````````
   function buildCircles(earthquakes){
     circlearray = []
-    console.log("running buildCircles")
+    console.log("function buildCircles in process... ")
     
   for (var i = 0; i < earthquakes.length; i++) {
     circlearray.push(
 
     L.circle([earthquakes[i].geometry.coordinates[1], earthquakes[i].geometry.coordinates[0]], {
       fillOpacity: 0.75,
-      // color: "white",
+      color: "white",
       stroke:false,
       fill: true,
       fillColor: magnitudeColors(earthquakes[i].properties.mag), 
+
+      // -- depth of earthquake -- color
+      // fillColor: magnitudeColors([earthquakes[i].geometry.coordinates[3]]), 
+
       radius: markerSize(earthquakes[i].properties.mag),
     }).bindPopup ("<h3>" + earthquakes[i].properties.place + 
           "</h3><hr><p>" + new Date(earthquakes[i].properties.time) + "</p>")
     ) // end of push
   }
   console.log(circlearray.length)
+  console.log("Magnitude = ")
+  console.log(markerSize)
   
   // .addTo(myMap);
   return L.layerGroup(circlearray)
