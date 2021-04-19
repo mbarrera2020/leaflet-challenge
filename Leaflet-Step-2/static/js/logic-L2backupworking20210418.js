@@ -1,4 +1,4 @@
-// Leaflet-Step-1
+// Leaflet-Step-2
 
 // get the url for the earthquake data
 // reference main URL -- https://earthquake.usgs.gov/earthquakes/feed/v1.0/geojson.php
@@ -57,10 +57,19 @@ function createMap(earthquakes) {
     accessToken: API_KEY
   });
 
+  var satellite = L.tileLayer("https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={accessToken}", {
+    attribution: "Map data &copy; <a href=\"https://www.openstreetmap.org/\">OpenStreetMap</a> contributors, <a href=\"https://creativecommons.org/licenses/by-sa/2.0/\">CC-BY-SA</a>, Imagery © <a href=\"https://www.mapbox.com/\">Mapbox</a>",
+    maxZoom: 18,
+    id: "mapbox.satellite",
+    accessToken: API_KEY
+  })
+
+  
   // Define a baseMaps object to hold our base layers
   var baseMaps = {
     "Street Map": streetmap,
-    "Dark Map": darkmap
+    "Dark Map": darkmap,
+    "Satellite": satellite
   };
 
   // Create overlay object to hold our overlay layer
@@ -70,7 +79,9 @@ function createMap(earthquakes) {
 
   // Create our map, giving it the streetmap and earthquakes layers to display on load
   var myMap = L.map("map", {
-    center: [37.09, -95.71],
+    center: [
+      37.09, -95.71
+    ],
     zoom: 5,
     layers: [streetmap, earthquakes]
   });
@@ -96,12 +107,10 @@ var legend = L.control({ position: "bottomright" });
   // var colors = geojson.options.colors;
 
   // -- use this for testing
-  var limits = [0, 1, 2, 3, 4, 5];
-  var colors = ["greenyellow", "lemonchiffon", "moccasin", "orange", "darkorange", "red"];
-
-  // var limits = ["-10-10", "10-30", "30-50", "50-70", "70-90", "90+"];
-  // var colors = ["#AEF48B", "E5F48B", "F4F48B", "F4DA8B", "EAB412", "EA4C12"];
-
+  var limits = [10, 20, 30, 40, 50, 60];
+  var colors = ["red", "orange", "yellow", "green", "blue", "indigo"];
+  // var colors = ["limegreen", "orange", "yellow", "green", "blue", "indigo"];
+  
   var labels = [];
   // var labels = ["-10-10", "10-30", "30-50", "50-70", "70-90", "90+"];
 
@@ -132,39 +141,18 @@ legend.addTo(myMap);
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // Function to create 6 color grades for earthquake magnitudes for circle markers.
-// Color reference:  
-// 1) https://www.rapidtables.com/web/color/html-color-codes.html
-// 2) http://www.2createawebsite.com/build/hex-colors.html
+// Color reference:  http://www.2createawebsite.com/build/hex-colors.html
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-// function magnitudeColors(color) {
-//   if (color > 5){return "red"}
-//   else if (color > 4){return "darkorange"}
-//   else if (color > 3){return "orange"}
-//   else if (color > 2){return "moccasin"} 
-//   else if (color > 1 ){return "lemonchiffon"}
-//   else {return "greenyellow"}
-// };
-
 function magnitudeColors(color) {
-  if (color > 5 ){return "greenyellow"}
-  else if (color > 4){return "lemonchiffon"}
-  else if (color > 3){return "moccasin"}
-  else if (color > 2){return "orange"} 
-  else if (color > 1 ){return "darkorange"}
-  else {return "red"}
+  if (color < 1){return "red"}
+  else if (color < 2){return "orange"}
+  else if (color < 3){return "yellow"}
+  else if (color < 4){return "green"} 
+  else if (color < 5 ){return "blue"}
+  else {return "indigo"}
 };
 
-// function magnitudeColors(color) {
-//   if (color < 1){return "greenyellow"}
-//   else if (color < 2){return "lemonchiffon"}
-//   else if (color < 3){return "moccasin"}
-//   else if (color < 4){return "orange"} 
-//   else if (color < 5 ){return "darkorange"}
-//   else {return "red"}
-// };
-
-  // *******************************************************************************
+// *******************************************************************************
   // Create circle markers
   // NOTE:  
   //   Data markers should reflect the magnitude of the earthquake by their size 
@@ -177,11 +165,7 @@ function magnitudeColors(color) {
   }
 
   // // ````````````````````````````````````````````````````````````````````````````````  
-  // // Loop through the locations and create one marker for each location / earthquake.
-  // // Note:
-  // // Data markers should reflect the magnitude of the earthquake by their size and 
-  // // depth of the earthquake by color. Earthquakes with higher magnitudes should 
-  // // appear larger and earthquakes with greater depth should appear darker in color.
+  // // Loop through the locations and create one marker for each location / earthquake
   // // ````````````````````````````````````````````````````````````````````````````````
   function buildCircles(earthquakes){
     circlearray = []
@@ -192,20 +176,17 @@ function magnitudeColors(color) {
 
     L.circle([earthquakes[i].geometry.coordinates[1], earthquakes[i].geometry.coordinates[0]], {
       fillOpacity: 0.75,
-      color: "lightgrey",
-      // stroke:false,
-      // fill: true,
-      
+      color: "white",
+      stroke:false,
+      fill: true,
+      fillColor: magnitudeColors(earthquakes[i].properties.mag), 
+
       // -- depth of earthquake -- color
-      fillColor: magnitudeColors([earthquakes[i].geometry.coordinates[2]]), 
+      // fillColor: magnitudeColors([earthquakes[i].geometry.coordinates[3]]), 
 
-      // -- magnitude -- size of circle 
       radius: markerSize(earthquakes[i].properties.mag),
-
-      // -- bind earthquake info
     }).bindPopup ("<h3>" + earthquakes[i].properties.place + 
           "<h3> Magnitude: " + earthquakes[i].properties.mag +
-          "<h3> Depth: " + earthquakes[i].geometry.coordinates[2] +
           "</h3><hr><p>" + new Date(earthquakes[i].properties.time) + "</p>")
     ) // end of push
   }
@@ -217,4 +198,3 @@ function magnitudeColors(color) {
   return L.layerGroup(circlearray)
   
 } // end bracket for function createMap
-
