@@ -39,7 +39,7 @@ function createFeatures(earthquakeData) {
 
 function createMap(earthquakes) {
 
-  // Define streetmap and darkmap layers
+  // Define streetmap, darkmap & satellite layers
   var streetmap = L.tileLayer("https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}", {
     attribution: "© <a href='https://www.mapbox.com/about/maps/'>Mapbox</a> © <a href='http://www.openstreetmap.org/copyright'>OpenStreetMap</a> <strong><a href='https://www.mapbox.com/map-feedback/' target='_blank'>Improve this map</a></strong>",
     tileSize: 512,
@@ -80,7 +80,8 @@ function createMap(earthquakes) {
   var myMap = L.map("map", {
     center: [37.09, -95.71],
     zoom: 5,
-    layers: [streetmap, earthquakes]
+    // layers: [streetmap, earthquakes]   // default: streetmap
+    layers: [satellite, earthquakes]      // default: satellite
   });
 
   // Create a layer control -- upper right radio buttons for (Street & Dark Map)
