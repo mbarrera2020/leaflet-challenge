@@ -111,9 +111,6 @@ var legend = L.control({ position: "bottomright" });
   var colors = ["red", "orange", "yellow", "green", "blue", "indigo"];
   // var colors = ["limegreen", "orange", "yellow", "green", "blue", "indigo"];
   
-  // var limits = ["-10-10", "10-30", "30-50", "50-70", "70-90", "90+"];
-  // var colors = ["#AEF48B", "E5F48B", "F4F48B", "F4DA8B", "EAB412", "EA4C12"];
-
   var labels = [];
   // var labels = ["-10-10", "10-30", "30-50", "50-70", "70-90", "90+"];
 
@@ -146,15 +143,6 @@ legend.addTo(myMap);
 // Function to create 6 color grades for earthquake magnitudes for circle markers.
 // Color reference:  http://www.2createawebsite.com/build/hex-colors.html
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// function magnitudeColors(color) {
-//   if (color < 1){return "#AEF48B"}
-//   else if (color < 2){return "E5F48B"}
-//   else if (color < 3){return "#F4F48B"}
-//   else if (color < 4){return "#F4DA8B"} 
-//   else if (color < 5 ){return "#EAB412"}
-//   else {return "#EA4C12"}
-// };
-
 function magnitudeColors(color) {
   if (color < 1){return "red"}
   else if (color < 2){return "orange"}
@@ -164,16 +152,7 @@ function magnitudeColors(color) {
   else {return "indigo"}
 };
 
-// function magnitudeColors(color) {
-//   if (color < 1){return "green"}
-//   else if (color < 2){return "yellowgreen"}
-//   else if (color < 3){return "yelloworange"}
-//   else if (color < 4){return "orange"} 
-//   else if (color < 5 ){return "redorange"}
-//   else {return "red"}
-// };
-
-  // *******************************************************************************
+// *******************************************************************************
   // Create circle markers
   // NOTE:  
   //   Data markers should reflect the magnitude of the earthquake by their size 
@@ -207,6 +186,7 @@ function magnitudeColors(color) {
 
       radius: markerSize(earthquakes[i].properties.mag),
     }).bindPopup ("<h3>" + earthquakes[i].properties.place + 
+          "<h3> Magnitude: " + earthquakes[i].properties.mag +
           "</h3><hr><p>" + new Date(earthquakes[i].properties.time) + "</p>")
     ) // end of push
   }

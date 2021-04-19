@@ -196,6 +196,7 @@ function magnitudeColors(color) {
 
       radius: markerSize(earthquakes[i].properties.mag),
     }).bindPopup ("<h3>" + earthquakes[i].properties.place + 
+          "<h3> Magnitude: " + earthquakes[i].properties.mag +
           "</h3><hr><p>" + new Date(earthquakes[i].properties.time) + "</p>")
     ) // end of push
   }
